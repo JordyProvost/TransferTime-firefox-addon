@@ -1,0 +1,10 @@
+{
+  "name": "transfertime",
+  "title": "Transfer Time",
+  "id": "jid1-rCPNbMUX93TBbw",
+  "description": "A basic add-on to calculate file transfer time. it also give you transfer capacity per day/week",
+  "author": "Jordy Provost",
+  "license": "GPL v3",
+  "version": "0.1",
+  "homepage": "https://github.com/jordyprovost/TransferTime-firefox-addon"
+}

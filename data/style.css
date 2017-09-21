@@ -1,0 +1,65 @@
+
+hmtl{
+margin: 0px;
+}
+
+body{
+margin: 0px;
+}
+
+input{
+
+}
+
+table#paneltable{
+	width: 780px;
+	height: 30px;
+    font-family:"Bitstream Vera Sans Mono","Courier 10 Pitch","Nimbus Mono L",Monaco,"Courier New",Courier,"OCR A Extended","DejaVu Sans Mono","Lucida Console",monospace;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: normal;
+    /*text-transform: uppercase;*/
+    letter-spacing: -1px;
+    line-height: 1.7em;
+    border-collapse:collapse;
+    margin-top:0px;
+    margin-left:0px;
+}
+
+table#paneltable tbody td:nth-child(even){
+    background-color:#444;
+    color:#444;
+    border-bottom:1px solid #444;
+    background:-webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.39, rgb(189,189,189)),
+        color-stop(0.7, rgb(224,224,224))
+        );
+    background:-moz-linear-gradient(
+        center bottom,
+        rgb(210,210,210) 39%,
+        rgb(250,250,250) 70%
+        );
+    text-shadow:1px 1px 1px #fff;
+}
+table#paneltable tbody td:nth-child(odd){
+    background-color:#555;
+    color:#f0f0f0;
+    border-bottom:1px solid #444;
+    background:-webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.39, rgb(85,85,85)),
+        color-stop(0.7, rgb(105,105,105))
+        );
+    background:-moz-linear-gradient(
+        center bottom,
+        rgb(80,80,80) 39%,
+        rgb(105,105,105) 70%
+        );
+    text-shadow:1px 1px 1px #000;
+}
+

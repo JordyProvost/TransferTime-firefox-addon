@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+<link href="style.css" type="text/css" rel="stylesheet">
+
+<script type="text/javascript">
+
+var extendedpanelwidth = 780;
+var extendedpanelheight = 60;
+var defaultextendedpanelwidth = extendedpanelwidth;
+var defaultextendedpanelheight = extendedpanelheight;
+var defaultextendedpanelheighterror = extendedpanelheight + 30;
+
+var bandwidthunitlabel = 'Mb/s'
+// retrieve browser language and set local variables
+var language = window.navigator.userLanguage || window.navigator.language;
+if (language == 'fr-fr' || language == 'fr') {
+	var gigabyteabrlabel= 'GO'
+	var sizelabel = 'Donn&eacute;es &agrave; transf&egrave;rer ('+ gigabyteabrlabel +')'
+	var bandwidthlabel = 'Bande Passante (' + bandwidthunitlabel +')'
+	var computelabel = 'Calculer'
+	var weeklabel = 'semaine'
+	var dayslabel = 'jours'
+	var daylabel = 'jour'
+	var hourslabel = 'heures'
+	var minuteslabel = 'minutes'
+	var unlimitedlabel = 'non limité'
+	var tolabel = 'à'
+	var limitlabel = 'Limiter'
+	var limitedlabel = 'Limit&eacute;'
+	var limitedtolabel = limitedlabel + ' à'
+	var limitduringlabel = 'pendant'
+	var hoursbydaylabel = hourslabel + '/' + daylabel
+	var daysbyweeklabel = dayslabel + '/' + weeklabel
+	var estimationlabel = 'Temps Estim&eacute;'
+	var wrongsizefield = '"Donn&eacute;es &agrave; transf&egrave;rer" doit être un nombre !'
+	var wronguploadfield = '"Bande Passante" doit être un nombre différent de zéro !'
+	var wrongpercentfield = '"pourcentage" doit être un nombre entre 0 et 100 !'
+	var wronglimitfield = '"limite" doit être un nombre entre 0 et '
+	var wronghoursfield = '"' + hoursbydaylabel + '" doit être un nombre entre 0 et 24 !'
+	var wrongdaysfield = '"' + daysbyweeklabel + '" doit être un nombre entre 0 et 7 !'
+	var transferlabel =  ''
+	var transferlabel2 = ' ' + bandwidthunitlabel
+} else {
+	var gigabyteabrlabel= 'GB'
+	var sizelabel = 'Data to transfer ('+ gigabyteabrlabel +')'
+	var bandwidthlabel = 'Bandwidth (' + bandwidthunitlabel +')'
+	var computelabel = 'Compute'
+	var weeklabel = 'week'
+	var dayslabel = 'days'
+	var daylabel = 'day'
+	var hourslabel = 'hours'
+	var minuteslabel = 'minutes'
+	var unlimitedlabel = 'unlimited'
+	var tolabel = 'to'
+	var limitlabel = 'Limit'
+	var limitedlabel = 'Limited'
+	var limitedtolabel = limitedlabel + ' to'
+	var limitduringlabel = 'during'
+	var hoursbydaylabel = hourslabel + '/' + daylabel
+	var daysbyweeklabel = dayslabel + '/' + weeklabel
+	var estimationlabel = 'Estimated Time'
+	var wrongsizefield = '"Data to transfer" must be a number !'
+	var wronguploadfield = '"Banwidth" must be a number different than zero !'
+	var wrongpercentfield = '"percent" must be a number between 0 and 100 !'
+	var wronglimitfield = '"limit" must be a number between 0 and'
+	var wronghoursfield = '"' + hoursbydaylabel + '" must be a number between 0 and 24 !'
+	var wrongdaysfield = '"' + daysbyweeklabel + '" must be a number between 0 and 7 !'
+	var transferlabel =  ''
+	var transferlabel2 = ' ' + bandwidthunitlabel
+
+}
+
+
+	var dailytransferlabel = ' '+ gigabyteabrlabel +'/' + daylabel
+	var weeklytransferlabel = ' '+ gigabyteabrlabel +'/' + weeklabel
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function compute(form){
+	// function to calculate and print estimated upload/download time, called when user click on 'compute' button
+	
+	addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheight);
+	answerrow.style.display = 'none';
+	answerlimitedrow.style.display = 'none';
+	dailyrow.style.display = 'none';
+	dailylimitedrow.style.display = 'none';
+	weeklyrow.style.display = 'none';
+	weeklylimitedrow.style.display = 'none';
+	
+	// handle empty fields in validation process
+	
+	if (!isNumeric(form.size.value)){
+		// print error in cell "answercell"
+		answercell.innerHTML=wrongsizefield;
+	
+		// resize panel to show error
+		answerrow.style.display = '';
+		addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+		
+		return;
+	} else {
+			var size = parseFloat(form.size.value);
+	};
+	
+	if(!isNumeric(form.upload.value) || (form.upload.value == 0)){
+		// print error in cell "answercell"
+		answercell.innerHTML=wronguploadfield;
+		answerrow.style.display = '';
+		addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+
+		return;
+	} else {
+		var upload = parseFloat(form.upload.value);
+	};
+	
+	if (document.getElementById('limitationcheckbox').checked == true) {
+		
+		if (document.getElementById("limitvalueunit").value == "percent") {
+			if(!isNumeric(form.limitvalue.value) || form.limitvalue.value < 0 || form.limitvalue.value > 100){
+				answercell.innerHTML=wrongpercentfield;
+				answerrow.style.display = '';
+				addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+				return;
+			} else {
+				var limitvalue = parseFloat(form.limitvalue.value);
+			};
+		} else if (document.getElementById("limitvalueunit").value == "mbs") {
+			if(!isNumeric(form.limitvalue.value) || form.limitvalue.value < 0 || form.limitvalue.value > upload){
+				answercell.innerHTML=wronglimitfield + ' ' + upload + ' !';
+				answerrow.style.display = '';
+				addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+				return;
+			} else {
+				var limitvalue = parseFloat(form.limitvalue.value);
+			};
+		};
+		
+	
+		if(!isNumeric(form.hours.value) || form.hours.value < 0 || form.hours.value > 24){
+			// print error in cell "answercell"
+			answercell.innerHTML=wronghoursfield;
+			answerrow.style.display = '';
+			addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+			return;
+		} else {
+			var limitedhours = parseFloat(form.hours.value);
+		};
+	
+		if(!isNumeric(form.days.value) || form.days.value < 0 || form.days.value > 7){
+			// print error in cell "answercell"
+			answercell.innerHTML=wrongdaysfield;
+			answerrow.style.display = '';
+			addon.port.emit("resize", defaultextendedpanelwidth, defaultextendedpanelheighterror);
+			return;
+		} else {
+			var limiteddays = parseFloat(form.days.value);
+		};
+	
+	};
+	
+	// computing transfer time for size input (unlimited)
+	var time = size * 1024 * 8 / upload;
+	var days = Math.floor(time / 86400);
+	var hours = Math.floor((time % 86400) / 3600);
+	var minutes = Math.floor(((time % 86400) % 3600) / 60);
+
+	// computing daily upload and weekly upload (unlimited)
+	var dailytransfer = upload * 86400 / 1024 / 8;
+	var weeklytransfer = upload * 604800 / 1024 / 8;
+	
+
+	
+	// computing limited daily upload and weekly upload (limited)
+	if (document.getElementById('limitationcheckbox').checked == true) {
+		if (document.getElementById("limitvalueunit").value == "percent") {
+			var dailylimitedtransfer = upload * 60 * 60 * limitedhours / 1024 / 8 / 100 * limitvalue;
+			var limitunit = '%'
+		} else if (document.getElementById("limitvalueunit").value == "mbs") {
+			var dailylimitedtransfer = limitvalue * 60 * 60 * limitedhours / 1024 / 8;
+			var limitunit = bandwidthunitlabel
+		}	
+		var dailyunlimitedtransfer = upload * 60 * 60 * (24 - limitedhours) / 1024 / 8;
+		var dailytransferwhenlimited = dailylimitedtransfer + dailyunlimitedtransfer;
+		var weeklylimitedtransfer = dailytransferwhenlimited * limiteddays;
+		var weeklyunlimitedtransfer = dailytransfer * (7 - limiteddays);
+		var weeklytransferwhenlimited = weeklylimitedtransfer + weeklyunlimitedtransfer;
+		
+		var timelimited = size / weeklytransferwhenlimited * 7 * 24 * 60 * 60;
+		var dayslimited = Math.floor(timelimited / 86400);
+		var hourslimited = Math.floor((timelimited % 86400) / 3600);
+		var minuteslimited = Math.floor(((timelimited % 86400) % 3600) / 60);
+		
+		if (limitvalue == 0 && limitedhours == 24 && limiteddays == 7) {
+			minuteslimited = "&infin;"
+			hourslimited = "&infin;"
+			dayslimited = "&infin;"
+		}
+		
+		// print answer in cell "answerlimitedcell"
+		answerlimitedcell.innerHTML=estimationlabel + ' (<i>' + limitedlabel + ' ' + tolabel + ' ' + weeklytransferwhenlimited.toFixed(2) + weeklytransferlabel + '</i>): ' + dayslimited + ' ' + dayslabel + ', ' + hourslimited + ' ' + hourslabel + ', ' + minuteslimited + ' ' + minuteslabel;
+		answerlimitedrow.style.display = '';
+		
+		// print answers in cells "dailylimitedcell" and "weeklylimitedcell"
+		dailylimitedcell.innerHTML=upload + transferlabel2 + ' (<i>' + limitedtolabel + ' ' + limitvalue + ' ' + limitunit + ', ' + limitedhours + ' ' + hoursbydaylabel + '</i>) = ' + dailytransferwhenlimited.toFixed(2) + dailytransferlabel;
+		weeklylimitedcell.innerHTML=upload + transferlabel2 + ' (<i>' + limitedtolabel + ' ' + limitvalue + ' ' + limitunit + ', ' + limitedhours + ' ' + hoursbydaylabel + ', ' + limiteddays + ' ' + daysbyweeklabel + '</i>) = ' + weeklytransferwhenlimited.toFixed(2) + weeklytransferlabel;
+		// display limited cells rows
+		dailylimitedrow.style.display = '';
+		weeklylimitedrow.style.display = '';
+	};
+	
+	// print answer in cell "answercell"
+	answercell.innerHTML=estimationlabel + ' (<i>' + unlimitedlabel + '</i>): ' + days + ' ' + dayslabel + ', ' + hours + ' ' + hourslabel + ', ' + minutes + ' ' + minuteslabel;
+	
+	//print daily transfer in cell "dailycell"
+	dailycell.innerHTML=upload + transferlabel2 + ' = ' + dailytransfer.toFixed(2) + dailytransferlabel;
+	
+	//print weekly transfer in cell "weeklycell"
+	weeklycell.innerHTML=upload + transferlabel2 + ' = '  + weeklytransfer.toFixed(2) + weeklytransferlabel;
+	
+	// display answer rows
+	answerrow.style.display = '';
+	dailyrow.style.display = '';
+	weeklyrow.style.display = '';
+
+	if (document.getElementById('limitationcheckbox').checked == true) {
+		var extendedpanelheight = 232;
+	} else {
+		var extendedpanelheight = 147;
+	}
+		
+	// resize panel to show result hidden cell (send "resize" message to addon)
+	addon.port.emit("resize", extendedpanelwidth, extendedpanelheight);
+}
+</script>
+
+</head>
+
+<!-- overflow:hidden disable brackets -->
+<!-- form validation on key press -->
+<body style="overflow:hidden" onKeyPress="if (event.keyCode == 13) compute(panelform)"> 
+
+<form id="panelform">
+	<table id="paneltable"></table>
+</form>
+
+<script>
+	// build table 'paneltable'
+	var table = document.getElementById("paneltable");
+	var formrow = table.insertRow(0);
+	var limitrow = table.insertRow(1);
+	var answerrow = table.insertRow(2);
+	var answerlimitedrow = table.insertRow(3);
+	var dailyrow = table.insertRow(4);
+	var dailylimitedrow = table.insertRow(5);
+	var weeklyrow = table.insertRow(6);
+	var weeklylimitedrow = table.insertRow(7);
+	var sizelabelcell = formrow.insertCell(0);
+	var sizeinputcell = formrow.insertCell(1);
+	var uploadlabelcell = formrow.insertCell(2);
+	var uploadinputcell = formrow.insertCell(3);
+	var computebtncell = formrow.insertCell(4);
+	var limitationenabledcell = limitrow.insertCell(0);
+	var limitationcell = limitrow.insertCell(1);
+	var answercell = answerrow.insertCell(0);
+	var answerlimitedcell = answerlimitedrow.insertCell(0);
+	var dailycell = dailyrow.insertCell(0);
+	var dailylimitedcell = dailylimitedrow.insertCell(0);
+	var weeklycell = weeklyrow.insertCell(0);
+	var weeklylimitedcell = weeklylimitedrow.insertCell(0);
+	
+	// hide answers rows
+	answerrow.style.display = 'none';
+	answerlimitedrow.style.display = 'none';
+	dailyrow.style.display = 'none';
+	dailylimitedrow.style.display = 'none';
+	weeklyrow.style.display = 'none';
+	weeklylimitedrow.style.display = 'none';
+	
+	// fill cells
+	sizelabelcell.innerHTML=sizelabel,
+	sizeinputcell.innerHTML='<input type="text" name="size" size="5" style="width: 100%;box-sizing : border-box;">',
+	uploadlabelcell.innerHTML=bandwidthlabel,
+	uploadinputcell.innerHTML='<input type="text" name="upload" size="5" style="width: 100%;box-sizing : border-box;">',
+	computebtncell.innerHTML='<input type="button" id="computebutton" style="width: 100%;box-sizing:border-box;outline:0;" value="' + computelabel + '">',
+	limitationenabledcell.innerHTML = '<input id="limitationcheckbox" type="checkbox" style="outline:0;display: inline;width:3em;">' + limitlabel,
+	limitationcell.innerHTML =  '<div  style="width:300px;display: inline;">' + tolabel + ' <input type="text" name="limitvalue" size="3" style="display: inline;width:3em">' + '<select id="limitvalueunit"><option value="percent">%</option><option value="mbs">' + bandwidthunitlabel + '</option></select>' + ' ' + limitduringlabel + ' <input type="text" name="hours" size="2" style="display: inline;width:2.5em"> ' + hoursbydaylabel + ' <input type="text" name="days" size="1" style="display: inline;width:2.5em"> ' + daysbyweeklabel + '</div',
+	limitationcell.setAttribute("colspan",4),
+	answercell.setAttribute("colspan",5),
+	answerlimitedcell.setAttribute("colspan",5),
+	dailycell.setAttribute("colspan",5),
+	dailylimitedcell.setAttribute("colspan",5),
+	weeklycell.setAttribute("colspan",5),
+	weeklylimitedcell.setAttribute("colspan",5);
+
+	var computebtn = document.getElementById("computebutton");
+	var computeform = document.getElementById("panelform");
+	computebtn.addEventListener('click', function(){compute(computeform);},false);
+	computeform.addEventListener('keydown', function(event){if (event.key == "Enter"){ compute(computeform);}},true);
+</script>
+
+
+</body>
