@@ -17,7 +17,7 @@ FRANCAIS:
 
 Un simple module Firefox pour calculer les temps de transfert de fichiers. Il vous donne aussi les capacités de transfert quotidiennes et hebdomadaires.
 
-Cette Addon crée un bouton dans Firefox, lorsque l'utilisateur clique, il doit remplir un formulaire avec deux champs: "Données à transfèrer (GO)" et "Bande Passante (Mb/s)".
+Ce Module crée un bouton dans Firefox, lorsque l'utilisateur clique, il doit remplir un formulaire avec deux champs: "Données à transfèrer (GO)" et "Bande Passante (Mb/s)".
 Une fois le formulaire validé, le module calcule:
 
 - le temps pour transfèrer les données en fonction des informations données par l'utilisateur.
